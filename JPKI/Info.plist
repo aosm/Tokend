@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>MuscleCard</string>
+	<string>JPKI</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.apple.tokend.musclecard</string>
+	<string>com.apple.tokend.jpki</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>MuscleCard</string>
+	<string>JPKI</string>
 	<key>CFBundlePackageType</key>
 	<string>????</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
