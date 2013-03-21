@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,31 +22,44 @@
  */
 
 /*
- *  JPKIAttributeCoder.h
- *  TokendMuscle
+ *  PIVSchema.h
+ *  TokendPIV
  */
 
-#ifndef _JPKIATTRIBUTECODER_H_
-#define _JPKIATTRIBUTECODER_H_
+#ifndef _PIVSCHEMA_H_
+#define _PIVSCHEMA_H_
 
-#include "AttributeCoder.h"
+#include "Schema.h"
+#include "PIVAttributeCoder.h"
+#include "PIVKeyHandle.h"
 
-//
-// A coder that reads the data of an object
-//
-class JPKIDataAttributeCoder : public Tokend::AttributeCoder
+namespace Tokend
 {
-	NOCOPY(JPKIDataAttributeCoder)
+	class Relation;
+	class MetaRecord;
+	class AttributeCoder;
+}
+
+class PIVSchema : public Tokend::Schema
+{
+	NOCOPY(PIVSchema)
 public:
+    PIVSchema();
+    virtual ~PIVSchema();
 
-	JPKIDataAttributeCoder() {}
-	virtual ~JPKIDataAttributeCoder();
+	virtual void create();
 
-	virtual void decode(Tokend::TokenContext *tokenContext,
-		const Tokend::MetaAttribute &metaAttribute, Tokend::Record &record);
+protected:
+	Tokend::Relation *createKeyRelation(CSSM_DB_RECORDTYPE keyType);
+
+private:
+	// Coders we need.
+	PIVDataAttributeCoder mPIVDataAttributeCoder;
+
+	Tokend::ConstAttributeCoder mKeyAlgorithmCoder;
+	Tokend::ConstAttributeCoder mKeySizeCoder;
+
+	PIVKeyHandleFactory mPIVKeyHandleFactory;
 };
 
-
-#endif /* !_JPKIATTRIBUTECODER_H_ */
-
-/* arch-tag: 6FC52429-1C88-11D9-8F6A-000A9595DEEE */
+#endif /* !_PIVSCHEMA_H_ */

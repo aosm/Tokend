@@ -50,6 +50,6 @@
 		<string>CSSM_SAMPLE_TYPE_PROTECTED_PASSWORD</string>
 	</array>
 	<key>Vendor</key>
-	<string>Apple Computer, Inc.</string>
+	<string>Apple, Inc.</string>
 </dict>
 </plist>

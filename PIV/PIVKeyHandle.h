@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,29 +22,28 @@
  */
 
 /*
- *  JPKIKeyHandle.h
- *  TokendMuscle
+ *  PIVKeyHandle.h
+ *  TokendPIV
  */
 
-#ifndef _JPKIKEYHANDLE_H_
-#define _JPKIKEYHANDLE_H_
+#ifndef _PIVKEYHANDLE_H_
+#define _PIVKEYHANDLE_H_
 
 #include "KeyHandle.h"
 
-class JPKIToken;
-class JPKIKeyRecord;
-
+class PIVToken;
+class PIVKeyRecord;
 
 //
-// A KeyHandle object which implements the crypto interface to muscle.
+// A KeyHandle object which implements the crypto interface to piv.
 //
-class JPKIKeyHandle: public Tokend::KeyHandle
+class PIVKeyHandle: public Tokend::KeyHandle
 {
-	NOCOPY(JPKIKeyHandle)
+	NOCOPY(PIVKeyHandle)
 public:
-    JPKIKeyHandle(JPKIToken &jpkiToken, const Tokend::MetaRecord &metaRecord,
-		JPKIKeyRecord &cacKey);
-    ~JPKIKeyHandle();
+    PIVKeyHandle(PIVToken &cacToken, const Tokend::MetaRecord &metaRecord,
+		PIVKeyRecord &cacKey);
+    ~PIVKeyHandle();
 
     virtual void getKeySize(CSSM_KEY_SIZE &keySize);
     virtual uint32 getOutputSize(const Context &context, uint32 inputSize,
@@ -53,7 +52,7 @@ public:
 		CSSM_ALGORITHMS signOnly, const CssmData &input, CssmData &signature);
     virtual void verifySignature(const Context &context,
 		CSSM_ALGORITHMS signOnly, const CssmData &input,
-		const CssmData &signature);
+			const CssmData &signature);
     virtual void generateMac(const Context &context, const CssmData &input,
 		CssmData &output);
     virtual void verifyMac(const Context &context, const CssmData &input,
@@ -65,29 +64,26 @@ public:
 
 	virtual void exportKey(const Context &context,
 		const AccessCredentials *cred, CssmKey &wrappedKey);
-
 private:
-	JPKIToken &mToken;
-	JPKIKeyRecord &mKey;
+	PIVToken &mToken;
+	PIVKeyRecord &mKey;
 };
 
 
 //
-// A factory that creates JPKIKeyHandle objects.
+// A factory that creates PIVKeyHandle objects.
 //
-class JPKIKeyHandleFactory : public Tokend::KeyHandleFactory
+class PIVKeyHandleFactory : public Tokend::KeyHandleFactory
 {
-	NOCOPY(JPKIKeyHandleFactory)
+	NOCOPY(PIVKeyHandleFactory)
 public:
-	JPKIKeyHandleFactory() {}
-	virtual ~JPKIKeyHandleFactory();
+	PIVKeyHandleFactory() {}
+	virtual ~PIVKeyHandleFactory();
 
 	virtual Tokend::KeyHandle *keyHandle(Tokend::TokenContext *tokenContext,
 		const Tokend::MetaRecord &metaRecord, Tokend::Record &record) const;
 };
 
 
-#endif /* !_JPKIKEYHANDLE_H_ */
-
-/* arch-tag: 7036DD24-1C88-11D9-A300-000A9595DEEE */
+#endif /* !_PIVKEYHANDLE_H_ */
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,35 +22,42 @@
  */
 
 /*
- *  JPKIAttributeCoder.cpp
- *  TokendMuscle
+ *  PIVAttributeCoder.cpp
+ *  TokendPIV
  */
 
-#include "JPKIAttributeCoder.h"
+/* ---------------------------------------------------------------------------
+ *
+ *		This file should not need to be modified except for replacing
+ *		"piv" with the name of your token
+ *
+ * ---------------------------------------------------------------------------
+*/
 
+#include "PIVAttributeCoder.h"
+
+#include "Adornment.h"
 #include "MetaAttribute.h"
 #include "MetaRecord.h"
-#include "JPKIRecord.h"
-#include "JPKIToken.h"
+#include "PIVRecord.h"
+#include "PIVToken.h"
+
+#include <Security/SecKeychainItem.h>
+#include <security_cdsa_utilities/cssmkey.h>
 
 using namespace Tokend;
 
-
 //
-// JPKIDataAttributeCoder
+// PIVDataAttributeCoder
 //
-JPKIDataAttributeCoder::~JPKIDataAttributeCoder()
+PIVDataAttributeCoder::~PIVDataAttributeCoder()
 {
 }
 
-void JPKIDataAttributeCoder::decode(TokenContext *tokenContext,
+void PIVDataAttributeCoder::decode(TokenContext *tokenContext,
 	const MetaAttribute &metaAttribute, Record &record)
 {
-	JPKICertificateRecord &jpkiCertRecord =
-		dynamic_cast<JPKICertificateRecord &>(record);
+	PIVRecord &pivRecord = dynamic_cast<PIVRecord &>(record);
 	record.attributeAtIndex(metaAttribute.attributeIndex(),
-		jpkiCertRecord.getDataAttribute(tokenContext));
+		pivRecord.getDataAttribute(tokenContext));
 }
-
-
-/* arch-tag: 6FA560F3-1C88-11D9-ACE1-000A9595DEEE */

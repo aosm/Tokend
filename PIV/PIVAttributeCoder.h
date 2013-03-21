@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,18 +22,40 @@
  */
 
 /*
- * jpki.cpp - JPKI.tokend main program
+ *  PIVAttributeCoder.h
+ *  TokendPIV
  */
 
-#include "JPKIToken.h"
+/* ---------------------------------------------------------------------------
+ *
+ *		This file should not need to be modified except for replacing
+ *		"piv" with the name of your token
+ *
+ * ---------------------------------------------------------------------------
+*/
 
-int main(int argc, const char *argv[])
+#ifndef _PIVATTRIBUTECODER_H_
+#define _PIVATTRIBUTECODER_H_
+
+#include "AttributeCoder.h"
+#include <string>
+
+#include <PCSC/musclecard.h>
+
+//
+// A coder that reads the data of an object
+//
+class PIVDataAttributeCoder : public Tokend::AttributeCoder
 {
-	secdebug("JPKI.tokend", "main starting with %d arguments", argc);
-	secdelay("/tmp/delay/JPKI");
+	NOCOPY(PIVDataAttributeCoder)
+public:
 
-	token = new JPKIToken();
-	return SecTokendMain(argc, argv, token->callbacks(), token->support());
-}
+	PIVDataAttributeCoder() {}
+	virtual ~PIVDataAttributeCoder();
 
-/* arch-tag: 6F384023-1C88-11D9-A675-000A9595DEEE */
+	virtual void decode(Tokend::TokenContext *tokenContext,
+		const Tokend::MetaAttribute &metaAttribute, Tokend::Record &record);
+};
+
+#endif /* !_PIVATTRIBUTECODER_H_ */
+

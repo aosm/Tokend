@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,11 +22,19 @@
  */
 
 /*
- *  JPKISchema.cpp
- *  TokendMuscle
+ *  PIVSchema.cpp
+ *  TokendPIV
  */
 
-#include "JPKISchema.h"
+/* ---------------------------------------------------------------------------
+ *
+ *		MODIFY
+ *		- Change key size if necessary
+ *
+ * ---------------------------------------------------------------------------
+*/
+
+#include "PIVSchema.h"
 
 #include "MetaAttribute.h"
 #include "MetaRecord.h"
@@ -37,23 +45,23 @@
 
 using namespace Tokend;
 
-JPKISchema::JPKISchema() :
+PIVSchema::PIVSchema() :
 	mKeyAlgorithmCoder(uint32(CSSM_ALGID_RSA)),
-	mKeySizeCoder(uint32(1024))
+	mKeySizeCoder(uint32(1024))		// MODIFY: if you support different size keys
 {
 }
 
-JPKISchema::~JPKISchema()
+PIVSchema::~PIVSchema()
 {
 }
 
-Tokend::Relation *JPKISchema::createKeyRelation(CSSM_DB_RECORDTYPE keyType)
+Tokend::Relation *PIVSchema::createKeyRelation(CSSM_DB_RECORDTYPE keyType)
 {
 	Relation *rn = createStandardRelation(keyType);
 
 	// Set up coders for key records.
 	MetaRecord &mr = rn->metaRecord();
-	mr.keyHandleFactory(&mJPKIKeyHandleFactory);
+	mr.keyHandleFactory(&mPIVKeyHandleFactory);
 
 	// Print name of a key might as well be the key name.
 	mr.attributeCoder(kSecKeyPrintName, &mDescriptionCoder);
@@ -82,22 +90,17 @@ Tokend::Relation *JPKISchema::createKeyRelation(CSSM_DB_RECORDTYPE keyType)
 	return rn;
 }
 
-void JPKISchema::create()
+void PIVSchema::create()
 {
 	Schema::create();
 
-	Relation *rn_ce = createStandardRelation(
-		CSSM_DL_DB_RECORD_X509_CERTIFICATE);
+	createStandardRelation(CSSM_DL_DB_RECORD_X509_CERTIFICATE);
 	createKeyRelation(CSSM_DL_DB_RECORD_PRIVATE_KEY);
+	
     Relation *rn_gen = createStandardRelation(CSSM_DL_DB_RECORD_GENERIC);
-
-	// Set coders for certificate attributes.
-	MetaRecord &mr_cert = rn_ce->metaRecord();
-	mr_cert.attributeCoderForData(&mJPKIDataAttributeCoder);
 
 	// Create the generic table
 	MetaRecord &mr_gen = rn_gen->metaRecord();
-	mr_gen.attributeCoderForData(&mJPKIDataAttributeCoder);
+	mr_gen.attributeCoderForData(&mPIVDataAttributeCoder);
 }
 
-/* arch-tag: 708C1AB0-1C88-11D9-A481-000A9595DEEE */

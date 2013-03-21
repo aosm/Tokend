@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,46 +22,48 @@
  */
 
 /*
- *  JPKIError.h
- *  TokendMuscle
+ *  PIVError.h
+ *  TokendPIV
  */
 
-#ifndef _JPKIERROR_H_
-#define _JPKIERROR_H_
+/* ---------------------------------------------------------------------------
+ *
+ *		MODIFY
+ *		- Fill in your token specific error codes below
+ *
+ * ---------------------------------------------------------------------------
+*/
+
+#ifndef _PIVERROR_H_
+#define _PIVERROR_H_
 
 #include "SCardError.h"
 
-/* '66XX'	Security-related issues. */
 
-/** Abnormality in Security environment. */
-#define JPKI_BAD_SECURITY_ENV                0x66F1
+/** Entered PIN is not correct and pin was blocked. */
+#define PIV_AUTHENTICATION_FAILED_0        0x6300
+/** Entered PIN is not correct, 1 try left. */
+#define PIV_AUTHENTICATION_FAILED_1        0x6301
+/** Entered PIN is not correct, 2 tries left. */
+#define PIV_AUTHENTICATION_FAILED_2        0x6302
+/** Entered PIN is not correct, 3 tries left. */
+#define PIV_AUTHENTICATION_FAILED_3        0x6303
 
-/** Abnormality with IEF specified by Security environment. */
-#define JPKI_BAD_EF_IN_SECURITY_ENV          0x66F2
-
-
-/* Normally this is: Referenced data invalidated. */
-/** Authentication method invalidated (blocked). */
-#define JPKI_AUTHENTICATION_BLOCKED          0x6984
-
-
-class JPKIError : public Tokend::SCardError
+class PIVError : public Tokend::SCardError
 {
 protected:
-    JPKIError(uint16_t sw);
+    PIVError(uint16_t sw);
 public:
 	OSStatus osStatus() const;
-    virtual const char *what () const throw ();
+	virtual const char *what () const throw ();
 
     static void check(uint16_t sw)	{ if (sw != SCARD_SUCCESS) throwMe(sw); }
     static void throwMe(uint16_t sw) __attribute__((noreturn));
     
 protected:
     IFDEBUG(void debugDiagnose(const void *id) const;)
-    IFDEBUG(static const char *errorstr(uint16_t sw);)
+    IFDEBUG(const char *errorstr(uint16_t sw) const;)
 };
 
-#endif /* !_JPKIERROR_H_ */
+#endif /* !_CACERROR_H_ */
 
-
-/* arch-tag: 6FFD641F-1C88-11D9-917B-000A9595DEEE */

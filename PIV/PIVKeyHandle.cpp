@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004 Apple Computer, Inc. All Rights Reserved.
+ *  Copyright (c) 2004-2007 Apple Inc. All Rights Reserved.
  * 
  *  @APPLE_LICENSE_HEADER_START@
  *  
@@ -22,14 +22,24 @@
  */
 
 /*
- *  JPKIKeyHandle.cpp
- *  TokendMuscle
+ *  PIVKeyHandle.cpp
+ *  TokendPIV
  */
 
-#include "JPKIKeyHandle.h"
+/* ---------------------------------------------------------------------------
+ *
+ *		MODIFY
+ *		- It may be that this file does not have to be modified. The heavy
+ *		  lifting here is done by computeCrypt, so this might be the only
+ *		  place to insert token-specific code. See PIVRecord.cpp for that.
+ *
+ * ---------------------------------------------------------------------------
+*/
 
-#include "JPKIRecord.h"
-#include "JPKIToken.h"
+#include "PIVKeyHandle.h"
+
+#include "PIVRecord.h"
+#include "PIVToken.h"
 
 #include <security_utilities/debugging.h>
 #include <security_utilities/utilities.h>
@@ -38,30 +48,31 @@
 
 
 //
-// JPKIKeyHandle
+// PIVKeyHandle
 //
-JPKIKeyHandle::JPKIKeyHandle(JPKIToken &jpkiToken,
-	const Tokend::MetaRecord &metaRecord,
-	JPKIKeyRecord &cacKey) :
-	Tokend::KeyHandle(metaRecord, &cacKey),
-	mToken(jpkiToken), mKey(cacKey)
+PIVKeyHandle::PIVKeyHandle(PIVToken &pivToken,
+	const Tokend::MetaRecord &metaRecord, PIVKeyRecord &pivKey) :
+	Tokend::KeyHandle(metaRecord, &pivKey),
+	mToken(pivToken),
+	mKey(pivKey)
 {
 }
 
-JPKIKeyHandle::~JPKIKeyHandle()
+PIVKeyHandle::~PIVKeyHandle()
 {
 }
 
-void JPKIKeyHandle::getKeySize(CSSM_KEY_SIZE &keySize)
+void PIVKeyHandle::getKeySize(CSSM_KEY_SIZE &keySize)
 {
 	secdebug("crypto", "getKeySize");
 	CssmError::throwMe(CSSM_ERRCODE_FUNCTION_NOT_IMPLEMENTED);
 }
 
-uint32 JPKIKeyHandle::getOutputSize(const Context &context, uint32 inputSize,
+uint32 PIVKeyHandle::getOutputSize(const Context &context, uint32 inputSize,
 	bool encrypting)
 {
 	secdebug("crypto", "getOutputSize");
+	// MODIFY: must be filled in for encryption keys
 	CssmError::throwMe(CSSM_ERRCODE_FUNCTION_NOT_IMPLEMENTED);
 }
 
@@ -88,10 +99,12 @@ static const unsigned char md5sigheader[] =
 	  0x04, 0x10 // OCTECT STRING (16 bytes)
 };
 
-void JPKIKeyHandle::generateSignature(const Context &context,
+void PIVKeyHandle::generateSignature(const Context &context,
 	CSSM_ALGORITHMS signOnly, const CssmData &input, CssmData &signature)
 {
-	secdebug("crypto", "generateSignature alg: %lu signOnly: %lu",
+	// MODIFY: This routine may have to be modified
+	// See comment at top of file
+	secdebug("crypto", "generateSignature alg: %u signOnly: %u",
 		context.algorithm(), signOnly);
 	IFDUMPING("crypto", context.dump("signature context"));
 
@@ -127,18 +140,9 @@ void JPKIKeyHandle::generateSignature(const Context &context,
 		// stuff
 		header = NULL;
 		headerLength = 0;
-
-		// @@@ Fix me
-		//CssmError::throwMe(CSSMERR_CSP_BLOCK_SIZE_MISMATCH);
 	}
 	else
 		CssmError::throwMe(CSSMERR_CSP_INVALID_DIGEST_ALGORITHM);
-
-#if 0
-	// @@@ Hack for JPKI card!
-	header = NULL;
-	headerLength = 0;
-#endif
 
 	// Create an input buffer in which we construct the data we will send to
 	// the token.
@@ -151,10 +155,6 @@ void JPKIKeyHandle::generateSignature(const Context &context,
 	uint32 padding = CSSM_PADDING_PKCS1;
 	context.getInt(CSSM_ATTRIBUTE_PADDING, padding);
 
-#if 1
-	if (padding != CSSM_PADDING_PKCS1)
-		CssmError::throwMe(CSSMERR_CSP_INVALID_ATTR_PADDING);
-#else
 	if (padding == CSSM_PADDING_PKCS1)
 	{
 		// Add PKCS1 style padding
@@ -173,7 +173,6 @@ void JPKIKeyHandle::generateSignature(const Context &context,
 	}
 	else
 		CssmError::throwMe(CSSMERR_CSP_INVALID_ATTR_PADDING);
-#endif
 
 	// Now copy the ASN1 header into the input buffer.
 	// This header is the DER encoding of
@@ -196,10 +195,8 @@ void JPKIKeyHandle::generateSignature(const Context &context,
 	size_t outputLength = keyLength;
 	try
 	{
-		const AccessCredentials *cred = context.get<const AccessCredentials>(
-			CSSM_ATTRIBUTE_ACCESS_CREDENTIALS);
 		// Sign the inputData using the token
-		mKey.computeCrypt(mToken, true, cred, inputData.get(), inputDataSize,
+		mKey.computeCrypt(mToken, true, inputData.get(), inputDataSize,
 			outputData, outputLength);
 	}
 	catch (...)
@@ -213,42 +210,91 @@ void JPKIKeyHandle::generateSignature(const Context &context,
 	signature.Length = outputLength;
 }
 
-void JPKIKeyHandle::verifySignature(const Context &context,
+void PIVKeyHandle::verifySignature(const Context &context,
 	CSSM_ALGORITHMS signOnly, const CssmData &input, const CssmData &signature)
 {
 	secdebug("crypto", "verifySignature");
 	CssmError::throwMe(CSSM_ERRCODE_FUNCTION_NOT_IMPLEMENTED);
 }
 
-void JPKIKeyHandle::generateMac(const Context &context,
+void PIVKeyHandle::generateMac(const Context &context,
 	const CssmData &input, CssmData &output)
 {
 	secdebug("crypto", "generateMac");
 	CssmError::throwMe(CSSM_ERRCODE_FUNCTION_NOT_IMPLEMENTED);
 }
 
-void JPKIKeyHandle::verifyMac(const Context &context,
+void PIVKeyHandle::verifyMac(const Context &context,
 	const CssmData &input, const CssmData &compare)
 {
 	secdebug("crypto", "verifyMac");
 	CssmError::throwMe(CSSM_ERRCODE_FUNCTION_NOT_IMPLEMENTED);
 }
 
-void JPKIKeyHandle::encrypt(const Context &context,
+void PIVKeyHandle::encrypt(const Context &context,
 	const CssmData &clear, CssmData &cipher)
 {
 	secdebug("crypto", "encrypt");
 	CssmError::throwMe(CSSM_ERRCODE_FUNCTION_NOT_IMPLEMENTED);
 }
 
-void JPKIKeyHandle::decrypt(const Context &context,
+void PIVKeyHandle::decrypt(const Context &context,
 	const CssmData &cipher, CssmData &clear)
 {
-	secdebug("crypto", "decrypt alg: %lu", context.algorithm());
-	CssmError::throwMe(CSSMERR_CSP_KEY_USAGE_INCORRECT);
+	// MODIFY: This routine may have to be modified
+	// See comment at top of file
+	secdebug("crypto", "decrypt alg: %u", context.algorithm());
+	IFDUMPING("crypto", context.dump("decrypt context"));
+
+	if (context.type() != CSSM_ALGCLASS_ASYMMETRIC)
+		CssmError::throwMe(CSSMERR_CSP_INVALID_CONTEXT);
+
+	if (context.algorithm() != CSSM_ALGID_RSA)
+		CssmError::throwMe(CSSMERR_CSP_INVALID_ALGORITHM);
+
+	size_t keyLength = mKey.sizeInBits() / 8;
+	if (cipher.length() % keyLength != 0)
+		CssmError::throwMe(CSSMERR_CSP_INPUT_LENGTH_ERROR);
+
+	// @@@ Add support for multiples of keyLength by doing multiple blocks
+	if (cipher.length() != keyLength)
+		CssmError::throwMe(CSSMERR_CSP_INPUT_LENGTH_ERROR);
+
+	// @@@ Use a secure allocator for this.
+	auto_array<uint8> outputData(keyLength);
+	uint8 *output = outputData.get();
+	size_t outputLength = keyLength;
+
+	secdebug("crypto", "decrypt: card supports RSA_NOPAD");
+	// Decrypt the inputData using the token
+	mKey.computeCrypt(mToken, false, cipher.Data, cipher.Length, output,
+		outputLength);
+
+	// Now check for proper  pkcs1 type 2 padding and remove it.
+	if (outputLength != keyLength || *(output++) != 0 || *(output++) != 2)
+		CssmError::throwMe(CSSMERR_CSP_INVALID_DATA);
+
+	/* Skip over padding data */
+	// We already skiped the 00 02 at the start of the block.
+	outputLength -= 2;
+	size_t padSize;
+	for (padSize = 0; padSize < outputLength; ++padSize)
+		if (*(output++) == 0) break;
+
+	if (padSize == outputLength || padSize < 8)
+		CssmError::throwMe(CSSMERR_CSP_INVALID_DATA);
+
+	/* Don't count the 00 at the end of the padding. */
+	outputLength -= padSize + 1;
+
+	// @@@ Switch to using tokend allocators
+	clear.Data = reinterpret_cast<uint8 *>(malloc(outputLength));
+	// Finally copy the result into the clear buffer and set the length.
+	memcpy(clear.Data, output, outputLength);
+	clear.Length = outputLength;
 }
 
-void JPKIKeyHandle::exportKey(const Context &context,
+void PIVKeyHandle::exportKey(const Context &context,
 	const AccessCredentials *cred, CssmKey &wrappedKey)
 {
 	secdebug("crypto", "exportKey");
@@ -257,21 +303,19 @@ void JPKIKeyHandle::exportKey(const Context &context,
 
 
 //
-// JPKIKeyHandleFactory
+// PIVKeyHandleFactory
 //
-JPKIKeyHandleFactory::~JPKIKeyHandleFactory()
+PIVKeyHandleFactory::~PIVKeyHandleFactory()
 {
 }
 
 
-Tokend::KeyHandle *JPKIKeyHandleFactory::keyHandle(
+Tokend::KeyHandle *PIVKeyHandleFactory::keyHandle(
 	Tokend::TokenContext *tokenContext, const Tokend::MetaRecord &metaRecord,
 	Tokend::Record &record) const
 {
-	JPKIKeyRecord &key = dynamic_cast<JPKIKeyRecord &>(record);
-	JPKIToken &jpkiToken = static_cast<JPKIToken &>(*tokenContext);
-	return new JPKIKeyHandle(jpkiToken, metaRecord, key);
+	PIVKeyRecord &key = dynamic_cast<PIVKeyRecord &>(record);
+	PIVToken &pivToken = static_cast<PIVToken &>(*tokenContext);
+	return new PIVKeyHandle(pivToken, metaRecord, key);
 }
 
-
-/* arch-tag: 701AE7EE-1C88-11D9-AF5D-000A9595DEEE */
